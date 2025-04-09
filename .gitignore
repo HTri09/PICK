@@ -124,3 +124,4 @@ __MACOSX/
 assets/
 examples/
 README.md
+/split_data/

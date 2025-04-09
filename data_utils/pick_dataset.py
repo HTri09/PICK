@@ -77,7 +77,7 @@ class PICKDataset(Dataset):
                                           names=['index', 'document_class', 'file_name'],
                                           dtype={'index': int, 'document_class': str, 'file_name': str})
         else:
-            self.files_list = list(self.boxes_and_transcripts_folder.glob('*.tsv'))
+            self.files_list = list(self.boxes_and_transcripts_folder.glob('*.csv'))
 
     def __len__(self):
         return len(self.files_list)
