@@ -196,7 +196,7 @@ class BatchCollateFn(object):
                                            value=keys_vocab_cls.stoi['<pad>'])
                                      for i, x in enumerate(batch_list)]
         
-        for i in text_length_padded_list:
+        for i in text_segments_padded_list:
             print(f"text_segments shape: {i.shape}")
             
             
