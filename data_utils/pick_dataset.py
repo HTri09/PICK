@@ -179,6 +179,9 @@ class BatchCollateFn(object):
                                                (0, 0, 0, max_boxes_num_batch - x.boxes_num,
                                                 0, max_boxes_num_batch - x.boxes_num))
                                          for i, x in enumerate(batch_list)]
+        
+        for i in relation_features_batch_tensor:
+            print(i.relation_features)
         relation_features_batch_tensor = torch.stack(relation_features_padded_list, dim=0)
 
         # boxes coordinates,  (B, num_boxes, 8)
