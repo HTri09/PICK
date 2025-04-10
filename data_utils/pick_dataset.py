@@ -182,9 +182,15 @@ class BatchCollateFn(object):
         relation_features_batch_tensor = torch.stack(relation_features_padded_list, dim=0)
 
         # boxes coordinates,  (B, num_boxes, 8)
-        boxes_coordinate_padded_list = [F.pad(torch.FloatTensor(x.boxes_coordinate),
-                                              (0, 0, 0, max_boxes_num_batch - x.boxes_num))
-                                        for i, x in enumerate(batch_list)]
+        boxes_coordinate_padded_list = [
+            F.pad(
+                torch.FloatTensor(x.boxes_coordinate),
+                (0, 0, 0, max_boxes_num_batch - x.boxes_num)
+            )
+            for x in batch_list
+        ]
+
+        # Sử dụng torch.stack trực tiếp sau khi padding
         boxes_coordinate_batch_tensor = torch.stack(boxes_coordinate_padded_list, dim=0)
 
         # text segments (B, num_boxes, T)
