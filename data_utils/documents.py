@@ -187,7 +187,10 @@ class Document:
                 iob_tags_label = IOBTagsField.process(iob_tags_label)[:, :transcript_len]
                 if isinstance(iob_tags_label, torch.Tensor):
                     iob_tags_label = iob_tags_label.numpy()
-                box_entity_types = [entities_vocab_cls.stoi[t] for t in box_entity_types[:boxes_num]]
+                box_entity_types = [
+                            entities_vocab_cls.stoi[t] if t in entities_vocab_cls.stoi else entities_vocab_cls.stoi['<unk>']
+                            for t in box_entity_types[:boxes_num]
+                        ]
 
             # texts shape is (num_texts, max_texts_len), texts_len shape is (num_texts,)
             texts, texts_len = TextSegmentsField.process(text_segments)
