@@ -27,10 +27,10 @@ class TextSegmentsField:
 
     def preprocess(self, text_segments):
         texts = [
-            [self.vocab.stoi.get(str(char), self.vocab.stoi['<unk>']) for char in segment.split()]
+            [self.vocab.stoi.get(str(char), self.vocab.stoi['<unk>']) for char in segment]
             for segment in text_segments
         ]
-        texts_len = [len(segment) for segment in text_segments]
+        texts_len = [len(segment.split()) for segment in text_segments]
         max_len = min(MAX_TRANSCRIPT_LEN, max(texts_len))
         padded_texts = [
             segment[:max_len] + [self.vocab.stoi['<pad>']] * (max_len - len(segment))
@@ -125,7 +125,7 @@ class Document:
 
         # Limit the number of boxes and number of transcripts to preprocess.
         boxes_num = min(len(boxes), MAX_BOXES_NUM)
-        transcript_len = min(max([len(t) for t in transcripts[:boxes_num]]), MAX_TRANSCRIPT_LEN)
+        transcript_len = min(max([len(t.split()) for t in transcripts[:boxes_num]]), MAX_TRANSCRIPT_LEN)
         mask = np.zeros((boxes_num, transcript_len), dtype=int)
 
         relation_features = np.zeros((boxes_num, boxes_num, 6))
@@ -266,8 +266,8 @@ class Document:
             relation_features[i, j, 4] = width_j / (height_i) \
                 if height_i != 0 and width_j / (height_i) is not None else -1  # w_j/h_i
 
-            relation_features[i, j, 5] = len(transcript_j) / (len(transcript_i)) \
-                if len(transcript_j) / (len(transcript_i)) is not None else -1  # T_j/T_i
+            relation_features[i, j, 5] = len(transcript_j.split()) / (len(transcript_i.split())) \
+                if len(transcript_j.split()) / (len(transcript_i.split())) is not None else -1  # T_j/T_i
 
 
 def read_gt_file_with_box_entity_type(filepath: str):
