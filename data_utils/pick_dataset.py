@@ -187,17 +187,24 @@ class BatchCollateFn(object):
         boxes_coordinate_batch_tensor = torch.stack(boxes_coordinate_padded_list, dim=0)
 
         # text segments (B, num_boxes, T)
-        for x in batch_list:
-            print(f"text_segments shape: {torch.LongTensor(x.text_segments[0]).shape}")
-        
-        text_segments_padded_list = [F.pad(torch.LongTensor(x.text_segments[0]),
-                                           (0, max_transcript_len - x.transcript_len,
-                                            0, max_boxes_num_batch - x.boxes_num),
-                                           value=keys_vocab_cls.stoi['<pad>'])
-                                     for i, x in enumerate(batch_list)]
-        
-        for i in text_segments_padded_list:
-            print(f"text_segments_padded_list shape: {i.shape}")
+        text_segments_padded_list = []
+        for idx, x in enumerate(batch_list):
+            t = torch.LongTensor(x.text_segments[0])
+            if t.numel() != x.boxes_num * x.transcript_len:
+                print(f"[{idx}] MISMATCH: t.shape={t.shape}, numel={t.numel()}, expected={x.boxes_num * x.transcript_len}")
+                print(f"boxes_num={x.boxes_num}, transcript_len={x.transcript_len}")
+                raise ValueError(f"Corrupted sample at idx {idx}")
+
+            padded = F.pad(t,
+                        (0, max_transcript_len - x.transcript_len,
+                            0, max_boxes_num_batch - x.boxes_num),
+                        value=keys_vocab_cls.stoi['<pad>'])
+
+            print(f"[{idx}] padded.shape={padded.shape}, boxes_num={x.boxes_num}, transcript_len={x.transcript_len}")
+            text_segments_padded_list.append(padded)
+
+        text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
+
             
             
         text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
