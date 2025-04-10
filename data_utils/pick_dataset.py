@@ -194,18 +194,16 @@ class BatchCollateFn(object):
         # Sử dụng torch.stack trực tiếp sau khi padding
         boxes_coordinate_batch_tensor = torch.stack(boxes_coordinate_padded_list, dim=0)
 
-        # text segments (B, num_boxes, T)
-        for i, x in enumerate(batch_list):
-            print(x.text_segments[0].shape, x.text_segments[1].shape, x.mask.shape)
             
         text_segments_padded_list = [
             F.pad(
-                torch.tensor(np.array(x.text_segments[0]), dtype=torch.float32),  # Chuyển đổi thành mảng NumPy trước
-                (0, max_transcript_len - x.transcript_len, 0, max_boxes_num_batch - x.boxes_num),
+                torch.LongTensor(x.text_segments[0]),
+                (0, max_transcript_len - x.text_segments[0].shape[1], 0, max_boxes_num_batch - x.text_segments[0].shape[0]),
                 value=keys_vocab_cls.stoi['<pad>']
             )
             for x in batch_list
         ]
+
 
         # Sử dụng torch.stack trực tiếp sau khi padding
         text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
