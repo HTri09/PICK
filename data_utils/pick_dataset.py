@@ -186,14 +186,27 @@ class BatchCollateFn(object):
                                         for i, x in enumerate(batch_list)]
         boxes_coordinate_batch_tensor = torch.stack(boxes_coordinate_padded_list, dim=0)
 
-        text_segments_padded_list = [F.pad(torch.LongTensor(x.text_segments[0]),
-                                            (0, 0, 0, max_boxes_num_batch - x.boxes_num,
-                                                0, max_boxes_num_batch - x.boxes_num),
-                                           value=keys_vocab_cls.stoi['<pad>'])
-                                     for i, x in enumerate(batch_list)]
-        
-            
-        text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
+        # Padding các tensor trong text_segments_padded_list
+        text_segments_padded_list = [
+            F.pad(
+                torch.LongTensor(x.text_segments[0]),
+                (0, max_transcript_len - x.transcript_len, 0, max_boxes_num_batch - x.boxes_num),
+                value=keys_vocab_cls.stoi['<pad>']
+            )
+            for x in batch_list
+        ]
+
+        # Lọc bỏ các tensor không phù hợp
+        text_segments_padded_list = [
+            tensor for tensor in text_segments_padded_list
+            if tensor.size(0) == max_boxes_num_batch and tensor.size(1) == max_transcript_len
+        ]
+
+        # Stack các tensor còn lại
+        if text_segments_padded_list:
+            text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
+        else:
+            raise RuntimeError("No valid tensors to stack in text_segments_padded_list.")
 
         # text length (B, num_boxes)
         text_length_padded_list = [F.pad(torch.LongTensor(x.text_segments[1]),
