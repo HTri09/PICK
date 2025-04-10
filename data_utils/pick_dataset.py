@@ -165,6 +165,8 @@ class BatchCollateFn(object):
         # this is suitable to one gpus or multi-nodes multi-gpus trianing mode, due to pytorch distributed training strategy.
         max_boxes_num_batch = max([x.boxes_num for x in batch_list])
         max_transcript_len = max([x.transcript_len for x in batch_list])
+        
+        print(f'Max boxes num batch: {max_boxes_num_batch}, Max transcript len: {max_transcript_len}')
 
         # fix MAX_BOXES_NUM and MAX_TRANSCRIPT_LEN. this ensures batch has same shape, but lead to waste memory and slow speed..
         # this is suitable to one nodes multi gpus training mode, due to pytorch DataParallel training strategy
