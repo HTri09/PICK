@@ -222,7 +222,7 @@ class BatchCollateFn(object):
                                   (0, max_transcript_len - x.transcript_len,
                                    0, max_boxes_num_batch - x.boxes_num))
                             for i, x in enumerate(batch_list)]
-        mask_batch_tensor = torch.stack(mask_padded_list, dim=0)
+        mask_batch_tensor = torch.stack(mask_padded_list)
 
         if self.training:
             # iob tag label for input text, (B, num_boxes, T)
