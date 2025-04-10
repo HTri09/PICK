@@ -33,10 +33,16 @@ class TextSegmentsField:
         self.vocab = vocab
 
     def preprocess(self, text_segments):
-        texts = [[self.vocab.stoi.get(char, self.vocab.stoi['<unk>']) for char in segment] for segment in text_segments]
+        texts = [
+            [self.vocab.stoi.get(str(char), self.vocab.stoi['<unk>']) for char in segment]
+            for segment in text_segments
+        ]
         texts_len = [len(segment) for segment in text_segments]
         max_len = min(MAX_TRANSCRIPT_LEN, max(texts_len))
-        padded_texts = [segment[:max_len] + [self.vocab.stoi['<pad>']] * (max_len - len(segment)) for segment in texts]
+        padded_texts = [
+            segment[:max_len] + [self.vocab.stoi['<pad>']] * (max_len - len(segment))
+            for segment in texts
+        ]
         return np.array(padded_texts), np.array(texts_len)
 
 TextSegmentsField = TextSegmentsField(keys_vocab_cls)
@@ -47,11 +53,16 @@ class IOBTagsField:
         self.vocab = vocab
 
     def preprocess(self, iob_tags):
-        tags = [[self.vocab.stoi.get(tag, self.vocab.stoi['<unk>']) for tag in segment] for segment in iob_tags]
+        tags = [
+            [self.vocab.stoi.get(str(tag), self.vocab.stoi['<unk>']) for tag in segment]
+            for segment in iob_tags
+        ]
         max_len = min(MAX_TRANSCRIPT_LEN, max(len(segment) for segment in iob_tags))
-        padded_tags = [segment[:max_len] + [self.vocab.stoi['<pad>']] * (max_len - len(segment)) for segment in tags]
+        padded_tags = [
+            segment[:max_len] + [self.vocab.stoi['<pad>']] * (max_len - len(segment))
+            for segment in tags
+        ]
         return np.array(padded_tags)
-
 IOBTagsField = IOBTagsField(iob_labels_vocab_cls)
 
 class RawField:
