@@ -10,7 +10,14 @@ import json
 import string
 from pathlib import Path
 
-from torchtext.data import Field, RawField
+import numpy as np
+
+from utils.entities_list import Entities_list
+from utils.class_utils import keys_vocab_cls, iob_labels_vocab_cls, entities_vocab_cls
+
+MAX_BOXES_NUM = 70  # limit max number boxes of every documents
+MAX_TRANSCRIPT_LEN = 50  # limit max length text of every box
+
 import numpy as np
 
 from utils.entities_list import Entities_list
@@ -20,12 +27,35 @@ MAX_BOXES_NUM = 70  # limit max number boxes of every documents
 MAX_TRANSCRIPT_LEN = 50  # limit max length text of every box
 
 # text string label converter
-TextSegmentsField = Field(sequential=True, use_vocab=True, include_lengths=True, batch_first=True)
-TextSegmentsField.vocab = keys_vocab_cls
-# iob string label converter
-IOBTagsField = Field(sequential=True, is_target=True, use_vocab=True, batch_first=True)
-IOBTagsField.vocab = iob_labels_vocab_cls
+class TextSegmentsField:
+    def __init__(self, vocab):
+        self.vocab = vocab
 
+    def process(self, text_segments):
+        texts = [[self.vocab.stoi.get(char, self.vocab.stoi['<unk>']) for char in segment] for segment in text_segments]
+        texts_len = [len(segment) for segment in text_segments]
+        max_len = min(MAX_TRANSCRIPT_LEN, max(texts_len))
+        padded_texts = [segment[:max_len] + [self.vocab.stoi['<pad>']] * (max_len - len(segment)) for segment in texts]
+        return np.array(padded_texts), np.array(texts_len)
+
+TextSegmentsField = TextSegmentsField(keys_vocab_cls)
+
+# iob string label converter
+class IOBTagsField:
+    def __init__(self, vocab):
+        self.vocab = vocab
+
+    def process(self, iob_tags):
+        tags = [[self.vocab.stoi.get(tag, self.vocab.stoi['<unk>']) for tag in segment] for segment in iob_tags]
+        max_len = min(MAX_TRANSCRIPT_LEN, max(len(segment) for segment in iob_tags))
+        padded_tags = [segment[:max_len] + [self.vocab.stoi['<pad>']] * (max_len - len(segment)) for segment in tags]
+        return np.array(padded_tags)
+
+IOBTagsField = IOBTagsField(iob_labels_vocab_cls)
+
+class RawField:
+    def preprocess(self, data):
+        return data
 
 class Document:
     def __init__(self, boxes_and_transcripts_file: Path, image_file: Path,
