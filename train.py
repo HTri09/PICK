@@ -2,6 +2,8 @@
 # @Author: Wenwen Yu
 # @Created Time: 7/12/2020 11:29 PM
 
+import warnings
+warnings.filterwarnings('ignore')
 import os
 import argparse
 import collections
