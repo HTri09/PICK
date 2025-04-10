@@ -157,6 +157,9 @@ class BatchCollateFn(object):
         self.training = training
 
     def __call__(self, batch_list: List[Document]):
+        
+        for i, doc in enumerate(batch_list):
+            print(f'[{i}] {doc.image_filename} boxes_num: {doc.boxes_num}, transcript_len: {doc.transcript_len}')
 
         # dynamic calculate max boxes number of batch,
         # this is suitable to one gpus or multi-nodes multi-gpus trianing mode, due to pytorch distributed training strategy.
@@ -194,10 +197,7 @@ class BatchCollateFn(object):
         
             
             
-        try:
-            text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
-        except Exception as e:
-            text_segments_batch_tensor = torch.zeros((len(batch_list), max_boxes_num_batch, max_transcript_len), dtype=torch.long)
+        text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
 
         # text length (B, num_boxes)
         text_length_padded_list = [F.pad(torch.LongTensor(x.text_segments[1]),

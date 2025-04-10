@@ -41,6 +41,7 @@ def main(config: ConfigParser, logger=None):
     val_data_loader = config.init_obj('val_data_loader', torch.utils.data.dataloader,
                                       dataset=val_dataset,
                                       collate_fn=BatchCollateFn())
+    
     logger.info(f'Dataloader instances created. Train datasets: {len(train_dataset)} samples '
                 f'Validation datasets: {len(val_dataset)} samples.')
 
