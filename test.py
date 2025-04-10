@@ -8,13 +8,44 @@ from tqdm import tqdm
 from pathlib import Path
 
 from torch.utils.data.dataloader import DataLoader
-from allennlp.data.dataset_readers.dataset_utils.span_utils import bio_tags_to_spans
 
 from parse_config import ConfigParser
 import model.pick as pick_arch_module
 from data_utils.pick_dataset import PICKDataset
 from data_utils.pick_dataset import BatchCollateFn
 from utils.util import iob_index_to_str, text_index_to_str
+
+
+def bio_tags_to_spans(tag_sequence):
+    """
+    Convert BIO tags to spans.
+    Args:
+        tag_sequence (List[str]): List of BIO tags.
+    Returns:
+        List[Tuple[str, Tuple[int, int]]]: List of spans with entity type and start-end indices.
+    """
+    spans = []
+    current_entity = None
+    start_idx = None
+
+    for idx, tag in enumerate(tag_sequence):
+        if tag.startswith("B-"):
+            if current_entity is not None:
+                spans.append((current_entity, (start_idx, idx - 1)))
+            current_entity = tag[2:]
+            start_idx = idx
+        elif tag.startswith("I-") and current_entity == tag[2:]:
+            continue
+        else:
+            if current_entity is not None:
+                spans.append((current_entity, (start_idx, idx - 1)))
+                current_entity = None
+                start_idx = None
+
+    if current_entity is not None:
+        spans.append((current_entity, (start_idx, len(tag_sequence) - 1)))
+
+    return spans
 
 
 def main(args):
@@ -74,7 +105,7 @@ def main(args):
 
             for decoded_tags, decoded_texts, image_index in zip(decoded_tags_list, decoded_texts_list, image_indexs):
                 # List[ Tuple[str, Tuple[int, int]] ]
-                spans = bio_tags_to_spans(decoded_tags, [])
+                spans = bio_tags_to_spans(decoded_tags)
                 spans = sorted(spans, key=lambda x: x[1][0])
 
                 entities = []  # exists one to many case

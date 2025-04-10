@@ -8,12 +8,6 @@ from collections import defaultdict
 import torch
 import numpy as np
 
-'''
-Custom implementation to replace torchtext and allennlp:
-    * Add accuracy measure mEA (mean Entity Accuracy)
-    * Rename precision, recall, f1 to mEP, mER, mEF
-    * Numerical stability
-'''
 
 TAGS_TO_SPANS_FUNCTION_TYPE = Callable[
     [List[str], Optional[List[str]]], List[Tuple[str, Tuple[int, int]]]]  # pylint: disable=invalid-name
