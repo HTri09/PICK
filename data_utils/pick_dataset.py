@@ -197,7 +197,7 @@ class BatchCollateFn(object):
                                      for i, x in enumerate(batch_list)]
         
         for i in text_segments_padded_list:
-            print(f"text_segments shape: {i.shape}")
+            print(f"text_segments_padded_list shape: {i.shape}")
             
             
         text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
