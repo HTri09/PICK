@@ -199,6 +199,14 @@ class BatchCollateFn(object):
             if padded.shape == (max_boxes_num_batch, max_transcript_len):
                 text_segments_padded_list.append(padded)
 
+        if len(text_segments_padded_list) == 0:
+            dummy_tensor = torch.full(
+                (1, 1),
+                fill_value=keys_vocab_cls.stoi['<pad>'],
+                dtype=torch.long
+            )
+            text_segments_padded_list.append(dummy_tensor)
+
 
         # Stack các tensor còn lại
         text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
