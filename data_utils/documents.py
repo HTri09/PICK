@@ -194,7 +194,9 @@ class Document:
 
             # texts shape is (num_texts, max_texts_len), texts_len shape is (num_texts,)
             texts, texts_len = TextSegmentsField.process(text_segments)
-            texts = texts[:, :transcript_len].numpy()
+            texts = texts[:, :transcript_len]
+            if isinstance(texts, torch.Tensor):
+                texts = texts.numpy()
             texts_len = np.clip(texts_len.numpy(), 0, transcript_len)
             text_segments = (texts, texts_len)
 
