@@ -190,26 +190,17 @@ class BatchCollateFn(object):
         text_segments_padded_list = [
             F.pad(
                 torch.LongTensor(x.text_segments[0]),
-                (0, max_transcript_len - x.transcript_len, 0, max_boxes_num_batch - x.boxes_num),
+                (0, 0, 0, max_boxes_num_batch - x.boxes_num),
                 value=keys_vocab_cls.stoi['<pad>']
             )
             for x in batch_list
         ]
 
-        # Print the shape of each tensor in text_segments_padded_list
         for idx, tensor in enumerate(text_segments_padded_list):
             print(f"Tensor {idx} shape: {tensor.shape}")
-        # Lọc bỏ các tensor không phù hợp
-        # text_segments_padded_list = [
-        #     tensor for tensor in text_segments_padded_list
-        #     if tensor.size(0) == max_boxes_num_batch and tensor.size(1) == max_transcript_len
-        # ]
 
         # Stack các tensor còn lại
-        if text_segments_padded_list:
-            text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
-        else:
-            raise RuntimeError("No valid tensors to stack in text_segments_padded_list.")
+        text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
 
         # text length (B, num_boxes)
         text_length_padded_list = [F.pad(torch.LongTensor(x.text_segments[1]),
@@ -222,7 +213,7 @@ class BatchCollateFn(object):
                                   (0, max_transcript_len - x.transcript_len,
                                    0, max_boxes_num_batch - x.boxes_num))
                             for i, x in enumerate(batch_list)]
-        mask_batch_tensor = torch.stack(mask_padded_list)
+        mask_batch_tensor = torch.stack(mask_padded_list, dim=0)
 
         if self.training:
             # iob tag label for input text, (B, num_boxes, T)
