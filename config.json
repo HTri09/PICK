@@ -83,7 +83,7 @@
             "batch_size": 4,
             "shuffle": true,
             "drop_last": true,
-            "num_workers": 8,
+            "num_workers": 4,
             "pin_memory": true
         }
     },
@@ -93,7 +93,7 @@
             "batch_size": 4,
             "shuffle": false,
             "drop_last": false,
-            "num_workers": 8,
+            "num_workers": 4,
             "pin_memory": true
         }
     },
