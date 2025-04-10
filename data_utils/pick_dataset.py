@@ -165,7 +165,14 @@ class BatchCollateFn(object):
         for i, x in enumerate(batch_list):
             print(f"\n--- Document {i} ---")
             for attr, value in vars(x).items():  # Duyệt qua tất cả các thuộc tính
-                print(f"{attr}: {value}")
+                if attr == "text_segments":  # Nếu thuộc tính là text_segments
+                    print(f"{attr}:")
+                    for segment in value[0]:  # Duyệt qua từng đoạn văn bản
+                        # Chuyển đổi từ indices về văn bản gốc
+                        original_text = ''.join([keys_vocab_cls.itos[idx] for idx in segment if idx in keys_vocab_cls.itos])
+                        print(f"  Original text: {original_text}")
+                else:
+                    print(f"{attr}: {value}")
 
         # dynamic calculate max boxes number of batch,
         max_boxes_num_batch = max([x.boxes_num for x in batch_list])
