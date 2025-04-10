@@ -53,11 +53,13 @@ class ConfigParser:
 
             # configure logging module, only local master setup logging
             setup_logging(self.log_dir)
-            self.log_levels = {
-                0: logging.WARNING,
-                1: logging.INFO,
-                2: logging.DEBUG
-            }
+
+        # Initialize log_levels
+        self.log_levels = {
+            0: logging.WARNING,
+            1: logging.INFO,
+            2: logging.DEBUG
+        }
 
     @classmethod
     def from_args(cls, args: ArgumentParser, options: collections.namedtuple = ''):
