@@ -27,7 +27,7 @@ class TextSegmentsField:
 
     def preprocess(self, text_segments):
         texts = [
-            [self.vocab.stoi.get(str(char), self.vocab.stoi['<unk>']) for char in segment]
+            [self.vocab.stoi.get(str(char), self.vocab.stoi['<unk>']) for char in segment.split()]
             for segment in text_segments
         ]
         texts_len = [len(segment) for segment in text_segments]

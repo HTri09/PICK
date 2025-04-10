@@ -8,7 +8,6 @@ from pathlib import Path
 import warnings
 import random
 from overrides import overrides
-from torch.nn.utils.rnn import pad_sequence
 
 import torch
 import torch.nn.functional as F
@@ -166,8 +165,6 @@ class BatchCollateFn(object):
         # this is suitable to one gpus or multi-nodes multi-gpus trianing mode, due to pytorch distributed training strategy.
         max_boxes_num_batch = max([x.boxes_num for x in batch_list])
         max_transcript_len = max([x.transcript_len for x in batch_list])
-        
-        print(f'Max boxes num batch: {max_boxes_num_batch}, Max transcript len: {max_transcript_len}')
 
         # fix MAX_BOXES_NUM and MAX_TRANSCRIPT_LEN. this ensures batch has same shape, but lead to waste memory and slow speed..
         # this is suitable to one nodes multi gpus training mode, due to pytorch DataParallel training strategy
@@ -196,21 +193,17 @@ class BatchCollateFn(object):
                                         for i, x in enumerate(batch_list)]
         boxes_coordinate_batch_tensor = torch.stack(boxes_coordinate_padded_list, dim=0)
 
-        tensor_list = [torch.LongTensor(x.text_segments[0]) for x in batch_list]
 
-        # pad tất cả về shape [max_boxes, max_transcript_len]
-        max_boxes = max(t.shape[0] for t in tensor_list)
-        max_transcript_len = max(t.shape[1] for t in tensor_list)
-
-        padded_list = []
-        for t in tensor_list:
-            pad_bottom = max_boxes - t.shape[0]
-            pad_right = max_transcript_len - t.shape[1]
-            padded = F.pad(t, (0, pad_right, 0, pad_bottom), value=keys_vocab_cls.stoi['<pad>'])
-            padded_list.append(padded)
+        # text segments (B, num_boxes, T)
+        text_segments_padded_list = [F.pad(torch.LongTensor(x.text_segments[0]),
+                                           (0, max_transcript_len - x.transcript_len,
+                                            0, max_boxes_num_batch - x.boxes_num),
+                                           value=keys_vocab_cls.stoi['<pad>'])
+                                     for i, x in enumerate(batch_list)]
 
 
-        text_segments_batch_tensor = torch.stack(padded_list, dim=0)
+        text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
+
 
 
         # text length (B, num_boxes)
