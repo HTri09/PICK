@@ -8,6 +8,7 @@ import re
 import cv2
 import json
 import string
+import torch
 from pathlib import Path
 
 import numpy as np
