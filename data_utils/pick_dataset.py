@@ -8,6 +8,7 @@ from pathlib import Path
 import warnings
 import random
 from overrides import overrides
+import numpy as np
 
 import torch
 import torch.nn.functional as F
@@ -196,8 +197,11 @@ class BatchCollateFn(object):
             for x in batch_list
         ]
 
-        # Sau đó stack các tensor
-        text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
+        # Chuyển đổi danh sách các tensor thành một mảng NumPy trước khi stack
+        text_segments_padded_array = np.array([tensor.numpy() for tensor in text_segments_padded_list])
+
+        # Sau đó chuyển đổi lại thành tensor và stack
+        text_segments_batch_tensor = torch.tensor(text_segments_padded_array)
 
         # text length (B, num_boxes)
         text_length_padded_list = [F.pad(torch.LongTensor(x.text_segments[1]),
