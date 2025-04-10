@@ -83,7 +83,7 @@
             "batch_size": 4,
             "shuffle": true,
             "drop_last": true,
-            "num_workers": 4,
+            "num_workers": 1,
             "pin_memory": true
         }
     },
