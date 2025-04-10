@@ -157,96 +157,18 @@ class BatchCollateFn(object):
         self.training = training
 
     def __call__(self, batch_list: List[Document]):
-        
+
         for i, doc in enumerate(batch_list):
             print(f'[{i}] {doc.image_filename} boxes_num: {doc.boxes_num}, transcript_len: {doc.transcript_len}')
 
+        # In toàn bộ các thuộc tính của từng đối tượng Document
+        for i, x in enumerate(batch_list):
+            print(f"\n--- Document {i} ---")
+            for attr, value in vars(x).items():  # Duyệt qua tất cả các thuộc tính
+                print(f"{attr}: {value}")
+
         # dynamic calculate max boxes number of batch,
-        # this is suitable to one gpus or multi-nodes multi-gpus trianing mode, due to pytorch distributed training strategy.
         max_boxes_num_batch = max([x.boxes_num for x in batch_list])
         max_transcript_len = max([x.transcript_len for x in batch_list])
 
-        # fix MAX_BOXES_NUM and MAX_TRANSCRIPT_LEN. this ensures batch has same shape, but lead to waste memory and slow speed..
-        # this is suitable to one nodes multi gpus training mode, due to pytorch DataParallel training strategy
-        # max_boxes_num_batch = documents.MAX_BOXES_NUM
-        # max_transcript_len = documents.MAX_TRANSCRIPT_LEN
-
-        ### padding every sample with same shape, then construct batch_list samples  ###
-
-        # whole image, B, C, H, W
-        image_batch_tensor = torch.stack([self.trsfm(x.whole_image) for x in batch_list], dim=0).float()
-
-        # relation features, (B, num_boxes, num_boxes, 6)
-        relation_features_padded_list = [F.pad(torch.FloatTensor(x.relation_features),
-                                               (0, 0, 0, max_boxes_num_batch - x.boxes_num,
-                                                0, max_boxes_num_batch - x.boxes_num))
-                                         for i, x in enumerate(batch_list)]
-        relation_features_batch_tensor = torch.stack(relation_features_padded_list, dim=0)
-
-        # boxes coordinates,  (B, num_boxes, 8)
-        boxes_coordinate_padded_list = [F.pad(torch.FloatTensor(x.boxes_coordinate),
-                                              (0, 0, 0, max_boxes_num_batch - x.boxes_num))
-                                        for i, x in enumerate(batch_list)]
-        boxes_coordinate_batch_tensor = torch.stack(boxes_coordinate_padded_list, dim=0)
-
-        text_segments_padded_list = [F.pad(torch.LongTensor(x.text_segments[0]),
-                                           (0, max_transcript_len - x.transcript_len,
-                                            0, max_boxes_num_batch - x.boxes_num),
-                                           value=keys_vocab_cls.stoi['<pad>'])
-                                     for i, x in enumerate(batch_list)]
-        
-            
-            
-        text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
-
-        # text length (B, num_boxes)
-        text_length_padded_list = [F.pad(torch.LongTensor(x.text_segments[1]),
-                                         (0, max_boxes_num_batch - x.boxes_num))
-                                   for i, x in enumerate(batch_list)]
-        text_length_batch_tensor = torch.stack(text_length_padded_list, dim=0)
-
-        # text mask, (B, num_boxes, T)
-        mask_padded_list = [F.pad(torch.ByteTensor(x.mask),
-                                  (0, max_transcript_len - x.transcript_len,
-                                   0, max_boxes_num_batch - x.boxes_num))
-                            for i, x in enumerate(batch_list)]
-        mask_batch_tensor = torch.stack(mask_padded_list, dim=0)
-
-        if self.training:
-            # iob tag label for input text, (B, num_boxes, T)
-            iob_tags_label_padded_list = [F.pad(torch.LongTensor(x.iob_tags_label),
-                                                (0, max_transcript_len - x.transcript_len,
-                                                 0, max_boxes_num_batch - x.boxes_num),
-                                                value=iob_labels_vocab_cls.stoi['<pad>'])
-                                          for i, x in enumerate(batch_list)]
-            iob_tags_label_batch_tensor = torch.stack(iob_tags_label_padded_list, dim=0)
-
-        else:
-            # (B,)
-            image_indexs_list = [x.image_index for x in batch_list]
-            image_indexs_tensor = torch.tensor(image_indexs_list)
-
-        # For easier debug.
-        filenames = [doc.image_filename for doc in batch_list]
-
-        # Convert the data into dict.
-        if self.training:
-            batch = dict(whole_image=image_batch_tensor,
-                         relation_features=relation_features_batch_tensor,
-                         text_segments=text_segments_batch_tensor,
-                         text_length=text_length_batch_tensor,
-                         boxes_coordinate=boxes_coordinate_batch_tensor,
-                         mask=mask_batch_tensor,
-                         iob_tags_label=iob_tags_label_batch_tensor,
-                         filenames=filenames)
-        else:
-            batch = dict(whole_image=image_batch_tensor,
-                         relation_features=relation_features_batch_tensor,
-                         text_segments=text_segments_batch_tensor,
-                         text_length=text_length_batch_tensor,
-                         boxes_coordinate=boxes_coordinate_batch_tensor,
-                         mask=mask_batch_tensor,
-                         image_indexs=image_indexs_tensor,
-                         filenames=filenames)
-
-        return batch
+        # Tiếp tục các xử lý khác...
