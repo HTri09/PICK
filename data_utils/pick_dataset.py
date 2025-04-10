@@ -158,8 +158,8 @@ class BatchCollateFn(object):
 
     def __call__(self, batch_list: List[Document]):
 
-        # for i, doc in enumerate(batch_list):
-        #     print(f'[{i}] {doc.image_filename} boxes_num: {doc.boxes_num}, transcript_len: {doc.transcript_len}')
+        for i, doc in enumerate(batch_list):
+            print(f'[{i}] {doc.image_filename} boxes_num: {doc.boxes_num}, transcript_len: {doc.transcript_len}')
 
         # dynamic calculate max boxes number of batch,
         # this is suitable to one gpus or multi-nodes multi-gpus trianing mode, due to pytorch distributed training strategy.
@@ -199,8 +199,8 @@ class BatchCollateFn(object):
             # In thông tin trước khi padding
             original_shape = torch.LongTensor(x.text_segments[0]).shape
             print(f"[{i}] Original shape: {original_shape}, "
-                f"max_transcript_len - x.transcript_len: {max_transcript_len - x.transcript_len}, "
-                f"max_boxes_num_batch - x.boxes_num: {max_boxes_num_batch - x.boxes_num}")
+                f"max_boxes_num_batch - x.boxes_num: {max_boxes_num_batch - x.boxes_num},"
+                f"max_transcript_len - x.transcript_len: {max_transcript_len - x.transcript_len}, ")
 
             # Thực hiện padding
             padded_text_segment = F.pad(
