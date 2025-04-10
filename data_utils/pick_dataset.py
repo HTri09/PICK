@@ -188,7 +188,7 @@ class BatchCollateFn(object):
 
         text_segments_padded_list = [F.pad(torch.LongTensor(x.text_segments[0]),
                                             (0, 0, 0, max_boxes_num_batch - x.boxes_num,
-                                                0, max_boxes_num_batch - x.boxes_num)
+                                                0, max_boxes_num_batch - x.boxes_num),
                                            value=keys_vocab_cls.stoi['<pad>'])
                                      for i, x in enumerate(batch_list)]
         
