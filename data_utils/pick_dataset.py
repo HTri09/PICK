@@ -193,7 +193,11 @@ class BatchCollateFn(object):
                                      for i, x in enumerate(batch_list)]
         
             
-        text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
+            
+        try:
+            text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
+        except Exception as e:
+            text_segments_batch_tensor = torch.zeros((len(batch_list), max_boxes_num_batch, max_transcript_len), dtype=torch.long)
 
         # text length (B, num_boxes)
         text_length_padded_list = [F.pad(torch.LongTensor(x.text_segments[1]),
