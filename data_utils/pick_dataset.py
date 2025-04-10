@@ -196,6 +196,9 @@ class BatchCollateFn(object):
             for x in batch_list
         ]
 
+        # Print the shape of each tensor in text_segments_padded_list
+        for idx, tensor in enumerate(text_segments_padded_list):
+            print(f"Tensor {idx} shape: {tensor.shape}")
         # Lọc bỏ các tensor không phù hợp
         text_segments_padded_list = [
             tensor for tensor in text_segments_padded_list
