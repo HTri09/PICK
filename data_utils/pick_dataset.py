@@ -190,13 +190,16 @@ class BatchCollateFn(object):
         for x in batch_list:
             print(f"text_segments shape: {torch.LongTensor(x.text_segments[0]).shape}")
         
-        print('here')
-
         text_segments_padded_list = [F.pad(torch.LongTensor(x.text_segments[0]),
                                            (0, max_transcript_len - x.transcript_len,
                                             0, max_boxes_num_batch - x.boxes_num),
                                            value=keys_vocab_cls.stoi['<pad>'])
                                      for i, x in enumerate(batch_list)]
+        
+        for i in text_length_padded_list:
+            print(f"text_segments shape: {i.shape}")
+            
+            
         text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
 
         # text length (B, num_boxes)
