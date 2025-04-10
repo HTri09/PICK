@@ -184,7 +184,7 @@ class BatchCollateFn(object):
         # boxes coordinates,  (B, num_boxes, 8)
         boxes_coordinate_padded_list = [
             F.pad(
-                torch.tensor(x.boxes_coordinate, dtype=torch.float32),
+                torch.tensor(np.array(x.boxes_coordinate), dtype=torch.float32),  # Chuyển đổi thành mảng NumPy trước
                 (0, 0, 0, max_boxes_num_batch - x.boxes_num)
             )
             for x in batch_list
