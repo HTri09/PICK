@@ -20,18 +20,17 @@ class ConfigParser:
         """
         class to parse configuration json file. Handles hyperparameters for training, initializations of modules, checkpoint saving
         and logging module.
-        :param config: Dict containing configurations, hyperparameters for training. contents of `config.json` file for example.
-        :param resume: String, path to the checkpoint being loaded.
-        :param modification: Dict keychain:value, specifying position values to be replaced from config dict.
-        :param run_id: Unique Identifier for training processes. Used to save checkpoints and training log. Timestamp is being used as default
         """
         # load config file and apply modification
         self._config = _update_config(config, modification)
         self.resume = resume
-        # str to bool, from modification or from default json file
         self.update_config('distributed', (self.config['distributed'] == 'true') or self.config['distributed'] == True)
 
-        if self.config['local_rank'] == 0: # only local master process create saved output dir
+        # Default values for save_dir and log_dir
+        self._save_dir = Path('./default_save_dir')  # Giá trị mặc định nếu không được khởi tạo
+        self._log_dir = Path('./default_log_dir')    # Giá trị mặc định nếu không được khởi tạo
+
+        if self.config['local_rank'] == 0:  # only local master process create saved output dir
             # set save_dir where trained model and log will be saved.
             save_dir = Path(self.config['trainer']['save_dir'])
 
