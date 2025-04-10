@@ -32,7 +32,7 @@ class TextSegmentsField:
     def __init__(self, vocab):
         self.vocab = vocab
 
-    def process(self, text_segments):
+    def preprocess(self, text_segments):
         texts = [[self.vocab.stoi.get(char, self.vocab.stoi['<unk>']) for char in segment] for segment in text_segments]
         texts_len = [len(segment) for segment in text_segments]
         max_len = min(MAX_TRANSCRIPT_LEN, max(texts_len))
@@ -46,7 +46,7 @@ class IOBTagsField:
     def __init__(self, vocab):
         self.vocab = vocab
 
-    def process(self, iob_tags):
+    def preprocess(self, iob_tags):
         tags = [[self.vocab.stoi.get(tag, self.vocab.stoi['<unk>']) for tag in segment] for segment in iob_tags]
         max_len = min(MAX_TRANSCRIPT_LEN, max(len(segment) for segment in iob_tags))
         padded_tags = [segment[:max_len] + [self.vocab.stoi['<pad>']] * (max_len - len(segment)) for segment in tags]
@@ -119,7 +119,7 @@ class Document:
                 boxes.append(points)
                 transcripts.append(transcript)
 
-        # Limit the number of boxes and number of transcripts to process.
+        # Limit the number of boxes and number of transcripts to preprocess.
         boxes_num = min(len(boxes), MAX_BOXES_NUM)
         transcript_len = min(max([len(t) for t in transcripts[:boxes_num]]), MAX_TRANSCRIPT_LEN)
         mask = np.zeros((boxes_num, transcript_len), dtype=int)
@@ -164,7 +164,7 @@ class Document:
             text_segments = [list(trans) for trans in transcripts[:boxes_num]]
 
             if self.training:
-                # assign iob label to input text through exactly match way, this process needs entity-level label
+                # assign iob label to input text through exactly match way, this preprocess needs entity-level label
                 if self.iob_tagging_type != 'box_level':
                     with entities_file.open() as f:
                         entities = json.load(f)
@@ -184,7 +184,7 @@ class Document:
                                                                                           transcripts[:boxes_num],
                                                                                           entities, ['address'])
 
-                iob_tags_label = IOBTagsField.process(iob_tags_label)[:, :transcript_len]
+                iob_tags_label = IOBTagsField.preprocess(iob_tags_label)[:, :transcript_len]
                 if isinstance(iob_tags_label, torch.Tensor):
                     iob_tags_label = iob_tags_label.numpy()
                 box_entity_types = [
@@ -193,7 +193,7 @@ class Document:
                         ]
 
             # texts shape is (num_texts, max_texts_len), texts_len shape is (num_texts,)
-            texts, texts_len = TextSegmentsField.process(text_segments)
+            texts, texts_len = TextSegmentsField.preprocess(text_segments)
             texts = texts[:, :transcript_len]
             if isinstance(texts, torch.Tensor):
                 texts = texts.numpy()
