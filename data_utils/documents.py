@@ -197,7 +197,9 @@ class Document:
             texts = texts[:, :transcript_len]
             if isinstance(texts, torch.Tensor):
                 texts = texts.numpy()
-            texts_len = np.clip(texts_len.numpy(), 0, transcript_len)
+            texts_len = np.clip(texts_len, 0, transcript_len)
+            if isinstance(texts_len, torch.Tensor):
+                texts_len = texts_len.numpy()
             text_segments = (texts, texts_len)
 
             for i in range(boxes_num):
