@@ -187,17 +187,19 @@ class BatchCollateFn(object):
         boxes_coordinate_batch_tensor = torch.stack(boxes_coordinate_padded_list, dim=0)
 
         # text segments (B, num_boxes, T)
+        text_segments_padded_list = []
         for x in batch_list:
-            print(f"text_segments shape: {torch.LongTensor(x.text_segments[0]).shape}")
-        
-        text_segments_padded_list = [F.pad(torch.LongTensor(x.text_segments[0]),
-                                           (0, max_transcript_len - x.transcript_len,
-                                            0, max_boxes_num_batch - x.boxes_num),
-                                           value=keys_vocab_cls.stoi['<pad>'])
-                                     for i, x in enumerate(batch_list)]
-        
-        for i in text_segments_padded_list:
-            print(f"text_segments_padded_list shape: {i.shape}")
+            padded_boxes = []
+            for seg in x.text_segments[0]:
+                seg_tensor = torch.LongTensor(seg)
+                pad_len = max_transcript_len - len(seg)
+                padded_seg = F.pad(seg_tensor, (0, pad_len), value=keys_vocab_cls.stoi['<pad>'])
+                padded_boxes.append(padded_seg)
+            pad_boxes_len = max_boxes_num_batch - len(padded_boxes)
+            if pad_boxes_len > 0:
+                padded_boxes.extend([torch.full((max_transcript_len,), keys_vocab_cls.stoi['<pad>'], dtype=torch.long)] * pad_boxes_len)
+            text_segments_padded_list.append(torch.stack(padded_boxes))
+
             
             
         text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
