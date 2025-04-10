@@ -194,7 +194,7 @@ class BatchCollateFn(object):
         boxes_coordinate_batch_tensor = torch.stack(boxes_coordinate_padded_list, dim=0)
 
         # text segments (B, num_boxes, T)
-        print(x.text_segments[0])
+        print(x.text_segments[0] for x in batch_list)
         text_segments_padded_list = [
             F.pad(
                 torch.LongTensor(x.text_segments[0]),
