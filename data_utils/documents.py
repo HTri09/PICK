@@ -26,11 +26,16 @@ class TextSegmentsField:
         self.vocab = vocab
 
     def preprocess(self, text_segments):
+        # Chuyển đổi text_segments thành danh sách các chỉ số
         texts = [
             [self.vocab.stoi.get(str(char), self.vocab.stoi['<unk>']) for char in segment]
             for segment in text_segments
         ]
-        texts_len = [len(segment.split()) for segment in text_segments]
+
+        # Tính độ dài số từ từ text_segments gốc
+        texts_len = [len(segment.split()) if isinstance(segment, str) else len(segment) for segment in text_segments]
+
+        # Padding các đoạn văn bản
         max_len = min(MAX_TRANSCRIPT_LEN, max(texts_len))
         padded_texts = [
             segment[:max_len] + [self.vocab.stoi['<pad>']] * (max_len - len(segment))
