@@ -195,14 +195,24 @@ class BatchCollateFn(object):
 
 
         # text segments (B, num_boxes, T)
-        text_segments_padded_list = [F.pad(torch.LongTensor(x.text_segments[0]),
-                                           (0, max_transcript_len - x.transcript_len,
-                                            0, max_boxes_num_batch - x.boxes_num),
-                                           value=keys_vocab_cls.stoi['<pad>'])
-                                     for i, x in enumerate(batch_list)]
+        text_segments_padded_list = []
+        for i, x in enumerate(batch_list):
+            # In thông tin trước khi padding
+            print(f"[{i}] Original shape: {torch.LongTensor(x.text_segments[0]).shape}, "
+                f"max_transcript_len - x.transcript_len: {max_transcript_len - x.transcript_len}, "
+                f"max_boxes_num_batch - x.boxes_num: {max_boxes_num_batch - x.boxes_num}")
 
+            # Thực hiện padding
+            padded_text_segment = F.pad(
+                torch.LongTensor(x.text_segments[0]),
+                (0, max_transcript_len - x.transcript_len, 0, max_boxes_num_batch - x.boxes_num),
+                value=keys_vocab_cls.stoi['<pad>']
+            )
 
-        text_segments_batch_tensor = torch.stack(text_segments_padded_list, dim=0)
+            # In thông tin sau khi padding
+            print(f"[{i}] Padded shape: {padded_text_segment.shape}")
+
+            text_segments_padded_list.append(padded_text_segment)
 
 
 
